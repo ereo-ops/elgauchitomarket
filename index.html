@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EL GAUCHITO MARKET - Envíos a Complejos Penitenciarios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans pb-24 md:pb-12">
+
+    <!-- HEADER / ENCABEZADO -->
+    <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-3">
+                <!-- Logo con entrada secreta de administrador (3 clics rápidos) -->
+                <div id="secretLogo" onclick="handleSecretClick()" class="flex items-center gap-3 cursor-pointer select-none" title="EL GAUCHITO MARKET">
+                    <span class="text-3xl">🛒</span>
+                    <div>
+                        <h1 class="text-xl font-black tracking-wider text-brand-600 uppercase leading-none">EL GAUCHITO MARKET</h1>
+                        <p class="text-xs text-slate-500 font-medium">Envíos a Penales</p>
+                    </div>
+                </div>
+
+                <!-- Buscador -->
+                <div class="flex-1 max-w-xs sm:max-w-md">
+                    <div class="relative">
+                        <input type="text" id="searchInput" oninput="renderProducts()" placeholder="Buscar producto..." 
+                            class="w-full bg-slate-100 border border-slate-300 text-xs text-slate-800 pl-8 pr-3 py-2 rounded-xl focus:border-brand-600 focus:bg-white focus:outline-none transition">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Botón de Carrito -->
+                <button id="cartBtn" onclick="toggleCart()" class="relative p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition">
+                    <i class="fa-solid fa-shopping-cart text-xl"></i>
+                    <span id="cartBadge" class="absolute -top-1 -right-1 bg-brand-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-amber-500 text-white text-xs font-bold text-center py-1.5 px-4">
+            ⚠️ Compra mínima requerida para realizar el pedido: $20.000 ARS
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Categorías -->
+        <div class="mb-6 overflow-x-auto pb-2 scrollbar-none">
+            <div id="categoryContainer" class="flex gap-2 min-w-max"></div>
+        </div>
+
+        <!-- Banner Bebidas -->
+        <div id="noAlcoholBanner" class="hidden mb-6 bg-blue-50 border-2 border-blue-400 rounded-xl p-4 flex items-center gap-3 text-blue-900 shadow-sm">
+            <i class="fa-solid fa-ban-smoke text-2xl text-blue-600"></i>
+            <div>
+                <h3 class="font-bold text-sm uppercase">Aviso importante en Bebidas</h3>
+                <p class="text-xs">Solo comercializamos gaseosas, aguas, jugos y amargos. <strong>NO vendemos bebidas alcohólicas.</strong></p>
+            </div>
+        </div>
+
+        <!-- Spinner Carga -->
+        <div id="loading" class="text-center py-12">
+            <i class="fa-solid fa-spinner animate-spin text-3xl text-brand-600 mb-2"></i>
+            <p class="text-xs text-slate-500 font-semibold">Cargando catálogo en tiempo real...</p>
+        </div>
+
+        <!-- Grid Productos -->
+        <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 hidden"></div>
+    </main>
+
+    <!-- Carrito Flotante (Móvil) -->
+    <div class="fixed bottom-4 right-4 z-40 md:hidden">
+        <button onclick="toggleCart()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-4 py-3 rounded-full shadow-2xl flex items-center gap-3">
+            <i class="fa-solid fa-cart-shopping text-lg"></i>
+            <span id="cartFloatingTotal">$0</span>
+        </button>
+    </div>
+
+    <!-- MODAL CARRITO -->
+    <div id="cartModal" class="fixed inset-0 bg-slate-900/60 z-50 backdrop-blur-sm hidden flex justify-end transition-opacity">
+        <div class="bg-white w-full max-w-md h-full flex flex-col justify-between shadow-2xl">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-basket-shopping text-brand-600 text-xl"></i>
+                    <h2 class="font-bold text-slate-800">Tu Carrito de Compra</h2>
+                </div>
+                <button onclick="toggleCart()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Aviso para borrar el carrito -->
+            <div class="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 py-2 text-[11px] font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-amber-600"></i>
+                <span>Poner los productos en 0 si quiere borrar el carrito.</span>
+            </div>
+
+            <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
+                <div class="space-y-1">
+                    <div class="flex justify-between text-slate-600 text-sm">
+                        <span>Subtotal:</span>
+                        <span id="cartSubtotal">$0</span>
+                    </div>
+                    <div id="minPurchaseNotice" class="text-xs text-rose-600 font-semibold text-right">
+                        Te faltan $20.000 para llegar al mínimo de compra.
+                    </div>
+                </div>
+
+                <div class="border-t pt-2 flex justify-between items-center text-slate-900 font-black text-lg">
+                    <span>Total a pagar:</span>
+                    <span id="cartTotal" class="text-brand-600">$0</span>
+                </div>
+
+                <div class="pt-2">
+                    <button id="checkoutBtn" disabled onclick="goToForm()" class="w-full bg-slate-300 text-slate-500 cursor-not-allowed font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+                        <span>Continuar Datos de Envío</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://6ab0bcf89751d2b03e6c57d4.mockapi.io/products";
+
+        const categories = ["Todos", "Comestibles", "Bebidas", "Higiene personal y cuidados", "Limpieza", "Kiosco", "Ofertas"];
+        let currentCategory = "Todos";
+        let productsList = [];
+        let cart = JSON.parse(localStorage.getItem('cart_gauchito')) || [];
+
+        // Lógica de acceso oculto al Administrador (3 Clics rápidos en el Logo)
+        let clickCount = 0;
+        let clickTimer = null;
+
+        function handleSecretClick() {
+            clickCount++;
+            if (clickCount === 1) {
+                clickTimer = setTimeout(() => { clickCount = 0; }, 1200);
+            } else if (clickCount === 3) {
+                clearTimeout(clickTimer);
+                clickCount = 0;
+                window.location.href = 'admin.html';
+            }
+        }
+
+        async function fetchProducts() {
+            try {
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error("Error de conexión");
+                productsList = await res.json();
+            } catch(e) {
+                console.error("Error al obtener productos:", e);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('productsGrid').classList.remove('hidden');
+                renderProducts();
+            }
+        }
+
+        function init() {
+            renderCategories();
+            fetchProducts();
+            updateCart();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" 
+                    class="px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm ${currentCategory === cat ? 'bg-brand-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-200'}">
+                    ${cat === "Bebidas" ? "🥤 Bebidas" : cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            renderCategories();
+            renderProducts();
+            document.getElementById('noAlcoholBanner').classList.toggle('hidden', cat !== "Bebidas");
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = productsList.filter(p => {
+                const matchesCat = currentCategory === "Todos" || p.category === currentCategory;
+                const matchesSearch = p.name.toLowerCase().includes(search);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-slate-400 py-8 text-xs">No hay productos disponibles.</p>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => {
+                const stock = p.stock !== undefined ? Number(p.stock) : 10;
+                const hasStock = stock > 0;
+
+                return `
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-3 relative">
+                        <div>
+                            <div class="relative">
+                                <img src="${p.image || 'https://via.placeholder.com/150'}" alt="${p.name}" class="w-full h-32 object-cover rounded-xl mb-2 ${!hasStock ? 'grayscale opacity-60' : ''}">
+                                ${!hasStock ? `<span class="absolute top-2 right-2 bg-rose-600 text-white font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider">SIN STOCK</span>` : ''}
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">${p.category}</span>
+                            <h3 class="font-bold text-slate-800 text-xs mt-1 line-clamp-2">${p.name}</h3>
+                            <p class="text-brand-600 font-black text-sm mt-1">$${Number(p.price).toLocaleString('es-AR')}</p>
+                            
+                            <p class="text-[10px] font-semibold mt-1 ${hasStock ? 'text-slate-500' : 'text-rose-600 font-bold'}">
+                                ${hasStock ? `Stock: ${stock} dispon.` : 'Producto agotado'}
+                            </p>
+                        </div>
+
+                        ${hasStock ? `
+                            <button onclick="addToCart('${p.id}')" class="mt-3 w-full bg-slate-900 hover:bg-brand-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-plus text-xs"></i> Agregar
+                            </button>
+                        ` : `
+                            <button disabled class="mt-3 w-full bg-slate-200 text-slate-400 font-bold py-2 rounded-xl text-xs cursor-not-allowed">
+                                Sin Stock
+                            </button>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addToCart(id) {
+            const prod = productsList.find(p => p.id == id);
+            if (!prod) return;
+
+            const maxStock = prod.stock !== undefined ? Number(prod.stock) : 10;
+            const item = cart.find(i => i.id == id);
+            const currentQty = item ? item.qty : 0;
+
+            if (currentQty + 1 > maxStock) {
+                alert(`⚠️ No podés agregar más unidades. El stock máximo disponible de "${prod.name}" es de ${maxStock} unidades.`);
+                return;
+            }
+
+            if (item) item.qty++;
+            else cart.push({ ...prod, qty: 1 });
+
+            saveAndRefresh();
+        }
+
+        function updateQty(id, delta) {
+            const item = cart.find(i => i.id == id);
+            if (!item) return;
+
+            const prod = productsList.find(p => p.id == id);
+            const maxStock = prod && prod.stock !== undefined ? Number(prod.stock) : 999;
+
+            if (delta > 0 && item.qty + 1 > maxStock) {
+                alert(`⚠️ Stock máximo alcanzado (${maxStock} unidades disponibles).`);
+                return;
+            }
+
+            item.qty += delta;
+            if (item.qty <= 0) cart = cart.filter(i => i.id != id);
+
+            saveAndRefresh();
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('cart_gauchito', JSON.stringify(cart));
+            updateCart();
+        }
+
+        function updateCart() {
+            const total = cart.reduce((acc, item) => acc + (Number(item.price) * item.qty), 0);
+            const totalQty = cart.reduce((acc, item) => acc + item.qty, 0);
+
+            const badge = document.getElementById('cartBadge');
+            if (totalQty > 0) { badge.textContent = totalQty; badge.classList.remove('hidden'); } 
+            else badge.classList.add('hidden');
+
+            document.getElementById('cartSubtotal').textContent = `$${total.toLocaleString('es-AR')}`;
+            document.getElementById('cartTotal').textContent = `$${total.toLocaleString('es-AR')}`;
+            document.getElementById('cartFloatingTotal').textContent = `$${total.toLocaleString('es-AR')}`;
+
+            const minNotice = document.getElementById('minPurchaseNotice');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+
+            if (total >= 20000) {
+                minNotice.classList.add('hidden');
+                checkoutBtn.disabled = false;
+                checkoutBtn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer shadow-lg";
+            } else {
+                minNotice.classList.remove('hidden');
+                const diff = 20000 - total;
+                minNotice.textContent = `Te faltan $${diff.toLocaleString('es-AR')} para el mínimo de $20.000 ARS.`;
+                checkoutBtn.disabled = true;
+                checkoutBtn.className = "w-full bg-slate-300 text-slate-500 cursor-not-allowed font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition";
+            }
+
+            document.getElementById('cartItems').innerHTML = cart.length === 0 
+                ? `<p class="text-center text-slate-400 text-xs py-8">Tu carrito está vacío.</p>`
+                : cart.map(i => `
+                    <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div class="flex-1 pr-2">
+                            <h4 class="font-bold text-xs text-slate-800">${i.name}</h4>
+                            <p class="text-xs text-slate-500">$${Number(i.price).toLocaleString('es-AR')} x ${i.qty} = <strong>$${(Number(i.price) * i.qty).toLocaleString('es-AR')}</strong></p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                            <button onclick="updateQty('${i.id}', -1)" class="text-slate-600 font-bold px-1.5">-</button>
+                            <span class="text-xs font-bold">${i.qty}</span>
+                            <button onclick="updateQty('${i.id}', 1)" class="text-slate-600 font-bold px-1.5">+</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function toggleCart() { document.getElementById('cartModal').classList.toggle('hidden'); }
+        function goToForm() { window.location.href = "formulario.html"; }
+
+        init();
+    </script>
+</body>
+</html>

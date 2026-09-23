@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen y Pago - EL GAUCHITO MARKET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen py-8 px-4">
+
+    <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
+        
+        <h1 class="text-lg font-black text-amber-400 uppercase tracking-wider text-center">Resumen de tu Compra</h1>
+
+        <!-- Detalle de Productos -->
+        <div id="summaryItems" class="space-y-2 bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-48 overflow-y-auto text-xs"></div>
+
+        <!-- Total a Pagar -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between items-center">
+            <span class="font-bold text-slate-300 text-sm">Total a pagar:</span>
+            <span id="summaryTotal" class="text-xl font-black text-rose-500">$0</span>
+        </div>
+
+        <!-- SECCIÓN Y BOTONES DE PAGO -->
+        <div class="space-y-3">
+            
+            <!-- Botón Mercado Pago con Logo -->
+            <a href="https://www.mercadopago.com.ar" target="_blank" class="w-full bg-[#009EE3] hover:bg-[#0081B8] text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-3 text-sm shadow-md">
+                <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm3.87 15.82c-.31.33-.78.53-1.3.53H9.43c-.52 0-.99-.2-1.3-.53l-2.02-2.1c-.26-.27-.4-.63-.4-1.01 0-.38.14-.74.4-1.01l2.02-2.1c.31-.33.78-.53 1.3-.53h5.14c.52 0 .99.2 1.3.53l2.02 2.1c.26.27.4.63.4 1.01 0 .38-.14.74-.4 1.01l-2.02 2.1zM12 6.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S13.38 6.5 12 6.5z"/>
+                </svg>
+                <span>Pagar con Mercado Pago</span>
+            </a>
+
+            <!-- Botón Transferencia -->
+            <button onclick="openTransferModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-3 text-sm shadow-md">
+                <i class="fa-solid fa-money-bill-transfer text-lg"></i>
+                <span>Pago por Transferencia Bancaria</span>
+            </button>
+
+            <!-- Botón Cancelar Orden -->
+            <button onclick="cancelOrder()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-2.5 rounded-xl transition text-xs border border-rose-600/30">
+                <i class="fa-solid fa-trash-can"></i> Cancelar Orden
+            </button>
+        </div>
+
+        <!-- Cambio 1: Aviso Pie de Página (Texto ajustado sin correo) -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 text-center leading-relaxed">
+            En caso de pagar por Mercado Pago o Transferencia, enviar el comprobante al número <strong class="text-white">1123456789</strong> junto con la referencia de la compra. ¡Gracias!
+        </div>
+    </div>
+
+    <!-- Cambio 2: Modal Emergente (Único lugar donde se ven los datos de transferencia) -->
+    <div id="transferModal" class="fixed inset-0 bg-slate-950/80 z-50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-xs">
+            
+            <h2 class="text-sm font-black text-amber-400 uppercase text-center border-b border-slate-800 pb-2">
+                Realizá la transferencia con estos datos
+            </h2>
+
+            <div class="space-y-2 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                <p><strong class="text-slate-400">Alias:</strong> <span class="text-white font-bold">elgauchito</span></p>
+                <p><strong class="text-slate-400">CVU:</strong> <span class="text-white font-mono">0000000000022220111111</span></p>
+                <p><strong class="text-slate-400">Titular:</strong> <span class="text-white font-bold">Caro Eliana</span></p>
+                <p><strong class="text-slate-400">Referencia Única:</strong> <span id="refCode" class="text-amber-400 font-mono font-black text-sm"></span></p>
+                <p class="pt-1 border-t border-slate-800"><strong class="text-slate-400">Monto exacto:</strong> <span id="modalTotal" class="text-rose-500 font-black text-sm"></span></p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="closeTransferModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition">
+                    Volver
+                </button>
+                <button onclick="finishTransfer()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
+                    ¡Confirmar Pago!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cart = JSON.parse(localStorage.getItem('cart_gauchito')) || [];
+        
+        function init() {
+            if (cart.length === 0) {
+                alert("El carrito está vacío.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            const container = document.getElementById('summaryItems');
+            const total = cart.reduce((acc, item) => acc + (Number(item.price) * item.qty), 0);
+
+            container.innerHTML = cart.map(i => `
+                <div class="flex justify-between items-center">
+                    <span>${i.name} x${i.qty}</span>
+                    <strong class="text-slate-200">$${(Number(i.price) * i.qty).toLocaleString('es-AR')}</strong>
+                </div>
+            `).join('');
+
+            document.getElementById('summaryTotal').textContent = `$${total.toLocaleString('es-AR')}`;
+            document.getElementById('modalTotal').textContent = `$${total.toLocaleString('es-AR')}`;
+
+            let ref = localStorage.getItem('ref_gauchito');
+            if (!ref) {
+                ref = "REF-" + Math.floor(100000 + Math.random() * 900000);
+                localStorage.setItem('ref_gauchito', ref);
+            }
+            document.getElementById('refCode').textContent = ref;
+        }
+
+        function cancelOrder() {
+            if (confirm("¿Estás seguro de cancelar la orden? Se borrarán todos los productos agregados.")) {
+                localStorage.removeItem('cart_gauchito');
+                localStorage.removeItem('form_gauchito');
+                localStorage.removeItem('ref_gauchito');
+                window.location.href = "index.html";
+            }
+        }
+
+        function openTransferModal() { document.getElementById('transferModal').classList.remove('hidden'); }
+        function closeTransferModal() { document.getElementById('transferModal').classList.add('hidden'); }
+
+        function finishTransfer() {
+            window.location.href = "confirmacion.html";
+        }
+
+        init();
+    </script>
+</body>
+</html>

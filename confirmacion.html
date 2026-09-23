@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Pedido Confirmado! - EL GAUCHITO MARKET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen py-8 px-4 flex items-center justify-center">
+
+    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl text-center space-y-5">
+        
+        <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h1 class="text-xl font-black text-white">¡Pedido Registrado con Éxito!</h1>
+        
+        <!-- Cambio 1: Texto ajustado solo para WhatsApp -->
+        <p class="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+            Para finalizar el pedido, enviá el resumen de la compra y el comprobante de pago por WhatsApp, recuerda agregar la referencia de la compra en caso de abonar por transferencia bancaria. ¡Gracias!
+        </p>
+
+        <!-- Cambio 2: Un solo botón exclusivo para WhatsApp -->
+        <div class="space-y-3 pt-2">
+            <button onclick="sendWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-lg">
+                <i class="fa-brands fa-whatsapp text-lg"></i>
+                <span>Enviar Comprobante por WhatsApp</span>
+            </button>
+        </div>
+
+        <a href="index.html" onclick="clearAllData()" class="inline-block text-xs text-amber-400 hover:underline pt-4">
+            ← Volver al Inicio de la Tienda
+        </a>
+    </div>
+
+    <script>
+        const cart = JSON.parse(localStorage.getItem('cart_gauchito')) || [];
+        const form = JSON.parse(localStorage.getItem('form_gauchito')) || {};
+        const ref = localStorage.getItem('ref_gauchito') || "N/A";
+
+        function buildMessage() {
+            const total = cart.reduce((acc, item) => acc + (Number(item.price) * item.qty), 0);
+
+            let msg = `🛒 *NUEVO PEDIDO - EL GAUCHITO MARKET*\n`;
+            msg += `🔖 *Referencia:* ${ref}\n\n`;
+            msg += `👤 *REMITENTE:*\n`;
+            msg += `• Nombre: ${form.senderName || ''} ${form.senderLastName || ''}\n`;
+            msg += `• WhatsApp: ${form.senderPhone || ''}\n\n`;
+            msg += `🆔 *DESTINATARIO (DETENIDO):*\n`;
+            msg += `• Nombre: ${form.receiverName || ''} ${form.receiverLastName || ''}\n`;
+            msg += `• Apellidos: ${form.receiverPaternal || ''} ${form.receiverMaternal || ''}\n`;
+            msg += `• Dirección / Penitenciaria: ${form.facilityAddress || ''}\n`;
+            msg += `• Pabellón/Sector: ${form.pabellon || ''}\n`;
+            msg += `• Día de Entrega: ${form.deliveryDate || ''}\n\n`;
+            msg += `📋 *PRODUCTOS:*\n`;
+            cart.forEach(i => {
+                msg += `• ${i.name} x${i.qty} = $${(Number(i.price) * i.qty).toLocaleString('es-AR')}\n`;
+            });
+            msg += `\n💰 *TOTAL A PAGAR:* $${total.toLocaleString('es-AR')}\n\n`;
+            msg += `Adjunto mi comprobante de transferencia a continuación:`;
+
+            return msg;
+        }
+
+        function sendWhatsApp() {
+            const phone = "5491123456789";
+            const text = encodeURIComponent(buildMessage());
+            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('cart_gauchito');
+            localStorage.removeItem('form_gauchito');
+            localStorage.removeItem('ref_gauchito');
+        }
+    </script>
+</body>
+</html>

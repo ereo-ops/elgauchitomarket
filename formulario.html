@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos de Destino - EL GAUCHITO MARKET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen py-8 px-4">
+
+    <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <h1 class="text-xl font-black text-rose-500 uppercase tracking-wider mb-6 text-center">Datos de Envío y Destino</h1>
+
+        <form id="deliveryForm" onsubmit="saveFormData(event)" class="space-y-6 text-xs">
+            
+            <!-- BLOQUE 1: ¿Quién lo envía? -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                <h2 class="text-amber-400 font-bold text-sm uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-user"></i> 1- ¿Quién lo envía? (Datos del Comprador)
+                </h2>
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Nombre de quien envía (*)</label>
+                    <input type="text" id="senderName" required placeholder="Ej: Juan" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Apellido de quien envía (*)</label>
+                    <input type="text" id="senderLastName" required placeholder="Ej: Pérez" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Número de Teléfono / WhatsApp (*) <span class="text-slate-400 font-normal">(Exactamente 10 dígitos)</span></label>
+                    <input type="text" id="senderPhone" maxlength="10" minlength="10" pattern="[0-9]{10}" required placeholder="Ej: 1123456789" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                    
+                    <p class="text-amber-400 font-semibold text-[11px] mt-1.5 flex items-center gap-1">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Si no se confirma el pedido por este medio no se despacha la mercadería.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: ¿Quién lo recibe? -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                <h2 class="text-amber-400 font-bold text-sm uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-id-card"></i> 2- ¿Quién lo recibe? (Datos del Detenido)
+                </h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Nombre del destinatario (*)</label>
+                        <input type="text" id="receiverName" required placeholder="Ej: Carlos" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Apellido del destinatario (*)</label>
+                        <input type="text" id="receiverLastName" required placeholder="Ej: Gómez" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Apellido paterno (*)</label>
+                        <input type="text" id="receiverPaternal" required placeholder="Ej: Gómez" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Apellido materno (*)</label>
+                        <input type="text" id="receiverMaternal" required placeholder="Ej: López" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg">
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: ¿A qué unidad / destino querés que llegue? -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                <h2 class="text-amber-400 font-bold text-sm uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-building-shield"></i> 3- ¿A qué unidad / destino querés que llegue?
+                </h2>
+                
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Dirección o Penitenciaria (*)</label>
+                    <input type="text" id="facilityAddress" required placeholder="Ej: Unidad 23 - Florencio Varela" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Pabellón / Sector (*)</label>
+                    <input type="text" id="pabellon" required oninput="handlePabellonInput()" placeholder="Ej: Pabellón 12" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg">
+                </div>
+
+                <!-- BLOQUE 4: Desplegable de días hábiles -->
+                <div id="deliveryDateSection" class="hidden space-y-2 pt-2 border-t border-slate-800">
+                    <p class="text-slate-300 font-semibold">Selecciona el día de entrega teniendo en cuenta que cada pabellón tiene un día específico asignado por la Unidad Penitenciaria.</p>
+                    
+                    <label class="block text-slate-300 font-bold">Día de Entrega (*)</label>
+                    <select id="deliveryDate" required class="w-full bg-slate-900 border border-slate-700 text-amber-400 font-bold p-2.5 rounded-lg">
+                        <option value="">-- Seleccionar día hábil --</option>
+                    </select>
+
+                    <p class="text-rose-500 font-bold text-[11px] pt-1">
+                        ⚠️ Los pedidos realizados después de las 10:30 horas no pueden ser entregados al día siguiente.
+                    </p>
+                </div>
+            </div>
+
+            <!-- BLOQUE 5: Términos y Condiciones -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-start gap-3">
+                <input type="checkbox" id="termsCheck" required class="mt-0.5 w-4 h-4 text-rose-600 bg-slate-900 border-slate-700 rounded focus:ring-0">
+                <label for="termsCheck" class="text-slate-300 text-xs cursor-pointer select-none">
+                    He leído y acepto los términos y condiciones anteriores.
+                </label>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <a href="index.html" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-center transition">
+                    ← Volver
+                </a>
+                <button type="submit" class="w-2/3 bg-rose-600 hover:bg-rose-700 text-white font-black py-3 rounded-xl transition shadow-lg text-sm">
+                    Continuar al Pago →
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function handlePabellonInput() {
+            const val = document.getElementById('pabellon').value.trim();
+            const dateSection = document.getElementById('deliveryDateSection');
+            const select = document.getElementById('deliveryDate');
+
+            if (val.length > 0) {
+                dateSection.classList.remove('hidden');
+                if (select.children.length <= 1) {
+                    populateBusinessDays(select);
+                }
+            } else {
+                dateSection.classList.add('hidden');
+                select.required = false;
+            }
+        }
+
+        function populateBusinessDays(selectElement) {
+            let daysAdded = 0;
+            let currentDate = new Date();
+            selectElement.innerHTML = `<option value="">-- Seleccionar día hábil --</option>`;
+
+            const daysNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+            while (daysAdded < 5) {
+                currentDate.setDate(currentDate.getDate() + 1);
+                const dayOfWeek = currentDate.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    const dayName = daysNames[dayOfWeek];
+                    const formattedDate = `${dayName} ${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+                    
+                    const option = document.createElement('option');
+                    option.value = formattedDate;
+                    option.textContent = formattedDate;
+                    selectElement.appendChild(option);
+                    daysAdded++;
+                }
+            }
+            selectElement.required = true;
+        }
+
+        function saveFormData(e) {
+            e.preventDefault();
+            const phone = document.getElementById('senderPhone').value.trim();
+
+            if (phone.length !== 10) {
+                alert("El número de teléfono debe incluir exactamente 10 dígitos (ej: 1123456789).");
+                return;
+            }
+
+            const formData = {
+                senderName: document.getElementById('senderName').value.trim(),
+                senderLastName: document.getElementById('senderLastName').value.trim(),
+                senderPhone: phone,
+                receiverName: document.getElementById('receiverName').value.trim(),
+                receiverLastName: document.getElementById('receiverLastName').value.trim(),
+                receiverPaternal: document.getElementById('receiverPaternal').value.trim(),
+                receiverMaternal: document.getElementById('receiverMaternal').value.trim(),
+                facilityAddress: document.getElementById('facilityAddress').value.trim(),
+                pabellon: document.getElementById('pabellon').value.trim(),
+                deliveryDate: document.getElementById('deliveryDate').value
+            };
+
+            localStorage.setItem('form_gauchito', JSON.stringify(formData));
+            window.location.href = "pago.html";
+        }
+    </script>
+</body>
+</html>

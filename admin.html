@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - EL GAUCHITO MARKET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
+
+    <!-- 🔒 PANTALLA DE LOGIN -->
+    <div id="loginSection" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl max-w-md w-full shadow-2xl">
+            <div class="text-center mb-6">
+                <span class="text-4xl block mb-2">🔐</span>
+                <h2 class="text-xl font-black text-rose-500 uppercase tracking-wider">Acceso Administrador</h2>
+                <p class="text-xs text-slate-400 mt-1">Ingresá tu usuario y contraseña para administrar la mercadería</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Usuario (*)</label>
+                    <input type="text" id="loginUser" required placeholder="Ingresá usuario" class="w-full bg-slate-950 border border-slate-700 text-white p-3 rounded-xl focus:border-rose-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-bold mb-1">Contraseña (*)</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 text-white p-3 rounded-xl focus:border-rose-500 focus:outline-none">
+                </div>
+
+                <div id="loginError" class="hidden bg-rose-500/20 border border-rose-500/40 text-rose-300 p-2.5 rounded-xl text-center text-xs font-bold">
+                    ⚠️ Usuario o contraseña incorrectos.
+                </div>
+
+                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm">
+                    Ingresar al Panel
+                </button>
+            </form>
+
+            <div class="mt-6 text-center border-t border-slate-800 pt-4">
+                <a href="index.html" class="text-xs text-slate-400 hover:text-slate-200 transition">← Volver a la Tienda</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚙️ CONTENIDO DEL PANEL DE ADMINISTRACIÓN -->
+    <div id="adminContent" class="hidden">
+        <header class="bg-slate-950 border-b border-slate-800 py-4 px-6 mb-6 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">⚙️</span>
+                <div>
+                    <h1 class="font-black text-rose-500 text-lg uppercase tracking-wider">Panel Administrador</h1>
+                    <p class="text-xs text-slate-400">Gestión de Inventario y Stock - EL GAUCHITO MARKET</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 px-3.5 py-2 rounded-lg transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-store"></i> Ir a la Tienda
+                </a>
+                <button onclick="logoutAdmin()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition shadow-md flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto px-4 space-y-6">
+
+            <!-- Formulario Cargar/Editar Producto -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <h2 id="formTitle" class="text-sm font-bold text-amber-400 uppercase mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> Cargar Nuevo Producto
+                </h2>
+
+                <form id="productForm" onsubmit="saveProduct(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                    <input type="hidden" id="editId">
+
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Nombre del Producto (*)</label>
+                        <input type="text" id="prodName" required placeholder="Ej: Aceite de Girasol 900ml" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Categoría (*)</label>
+                        <select id="prodCategory" required class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                            <option value="Comestibles">Comestibles</option>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Higiene personal y cuidados">Higiene personal y cuidados</option>
+                            <option value="Limpieza">Limpieza</option>
+                            <option value="Kiosco">Kiosco</option>
+                            <option value="Ofertas">Ofertas</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Precio ($ ARS) (*)</label>
+                        <input type="number" id="prodPrice" required min="1" placeholder="Ej: 1800" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 font-bold mb-1">Stock Disponible (Unidades) (*)</label>
+                        <input type="number" id="prodStock" required min="0" placeholder="Ej: 50" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                    </div>
+
+                    <div class="md:col-span-2 lg:col-span-3">
+                        <label class="block text-slate-300 font-bold mb-1">URL de la Imagen (Opcional)</label>
+                        <input type="url" id="prodImage" placeholder="https://ejemplo.com/imagen.jpg" class="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-rose-500 focus:outline-none">
+                    </div>
+
+                    <div class="flex items-end gap-2">
+                        <button type="submit" id="saveBtn" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-lg transition">
+                            Guardar Producto
+                        </button>
+                        <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2.5 rounded-lg transition">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabla de Inventario -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-bold text-slate-200 uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-boxes-stacked text-rose-500"></i> Inventario de Productos
+                    </h2>
+                    <span id="productCount" class="text-xs bg-slate-900 text-slate-400 border border-slate-800 px-3 py-1 rounded-full font-bold">Cargando...</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Imagen</th>
+                                <th class="p-3">Producto</th>
+                                <th class="p-3">Categoría</th>
+                                <th class="p-3">Precio</th>
+                                <th class="p-3">Stock</th>
+                                <th class="p-3 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable" class="divide-y divide-slate-800/50">
+                            <!-- Carga dinámica -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "https://6ab0bcf89751d2b03e6c57d4.mockapi.io/products";
+        let products = [];
+
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "gauchito2026";
+
+        function checkAuth() {
+            const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
+            if (isLoggedIn) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminContent').classList.remove('hidden');
+                loadProducts();
+            } else {
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('adminContent').classList.add('hidden');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value.trim();
+
+            if (u === ADMIN_USER && p === ADMIN_PASS) {
+                sessionStorage.setItem('admin_logged_in', 'true');
+                document.getElementById('loginError').classList.add('hidden');
+                checkAuth();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('admin_logged_in');
+            window.location.href = 'index.html';
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch(API_URL);
+                products = await res.json();
+                renderTable();
+            } catch (e) {
+                console.error("Error al cargar productos:", e);
+                alert("Error al conectar con la base de datos de productos.");
+            }
+        }
+
+        function renderTable() {
+            const table = document.getElementById('inventoryTable');
+            document.getElementById('productCount').textContent = `${products.length} productos`;
+
+            if (products.length === 0) {
+                table.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500">No hay productos cargados en el sistema.</td></tr>`;
+                return;
+            }
+
+            table.innerHTML = products.map(p => {
+                const isOutOfStock = Number(p.stock || 0) <= 0;
+                return `
+                    <tr class="${isOutOfStock ? 'bg-rose-950/40 border-l-4 border-rose-600' : 'hover:bg-slate-900/50'} transition">
+                        <td class="p-3">
+                            <img src="${p.image || 'https://via.placeholder.com/50'}" class="w-10 h-10 object-cover rounded-lg border border-slate-800">
+                        </td>
+                        <td class="p-3 font-bold ${isOutOfStock ? 'text-rose-300' : 'text-white'}">
+                            ${p.name}
+                        </td>
+                        <td class="p-3 text-slate-400">${p.category}</td>
+                        <td class="p-3 font-bold text-amber-400">$${Number(p.price).toLocaleString('es-AR')}</td>
+                        <td class="p-3">
+                            ${isOutOfStock 
+                                ? `<span class="bg-rose-600/30 text-rose-400 border border-rose-600/50 px-2.5 py-1 rounded-full font-black text-[10px] uppercase">🔴 Sin Stock (0)</span>` 
+                                : `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold text-[10px]">${p.stock} dispon.</span>`
+                            }
+                        </td>
+                        <td class="p-3 text-right space-x-1">
+                            <button onclick="editProduct('${p.id}')" class="bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/30 px-2.5 py-1.5 rounded-lg font-bold transition">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="deleteProduct('${p.id}')" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 border border-rose-600/30 px-2.5 py-1.5 rounded-lg font-bold transition">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const data = {
+                name: document.getElementById('prodName').value.trim(),
+                category: document.getElementById('prodCategory').value,
+                price: Number(document.getElementById('prodPrice').value),
+                stock: Number(document.getElementById('prodStock').value),
+                image: document.getElementById('prodImage').value.trim() || 'https://via.placeholder.com/150'
+            };
+
+            try {
+                if (id) {
+                    await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+                resetForm();
+                loadProducts();
+            } catch (err) {
+                alert("Error al guardar el producto.");
+            }
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id == id);
+            if (!p) return;
+            document.getElementById('editId').value = p.id;
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodCategory').value = p.category;
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodStock').value = p.stock !== undefined ? p.stock : 10;
+            document.getElementById('prodImage').value = p.image || '';
+
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen"></i> Editando Producto #${p.id}`;
+            document.getElementById('saveBtn').textContent = "Actualizar Producto";
+            document.getElementById('cancelBtn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("¿Seguro que querés eliminar este producto del catálogo?")) return;
+            try {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                loadProducts();
+            } catch (err) {
+                alert("Error al eliminar el producto.");
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('productForm').reset();
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-plus-circle"></i> Cargar Nuevo Producto`;
+            document.getElementById('saveBtn').textContent = "Guardar Producto";
+            document.getElementById('cancelBtn').classList.add('hidden');
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
